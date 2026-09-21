@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% block title %}Operator · Halo DEEPS{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="section-kicker">OPERATOR CONSOLE</div><h1>Verifikasi Laporan</h1><p class="muted">Tinjau laporan sebelum ditampilkan pada peta publik.</p></div></div>
+<div class="stat-grid">
+  <div class="stat-card"><span>Menunggu</span><strong>{{stats.pending}}</strong><small>Perlu ditinjau</small></div>
+  <div class="stat-card"><span>Disetujui</span><strong>{{stats.approved}}</strong><small>Tampil di peta</small></div>
+  <div class="stat-card"><span>Ditolak</span><strong>{{stats.disapproved}}</strong><small>Perlu perbaikan</small></div>
+  <div class="stat-card"><span>Total</span><strong>{{stats.total}}</strong><small>Semua laporan</small></div>
+</div>
+<div class="operator-list">
+{% for r in pending %}
+<article class="review-card">
+  <div class="review-media">{% if r.photo %}<img src="{{url_for('uploaded_file', filename=r.photo)}}" alt="Foto">{% else %}<div class="photo-empty">No photo</div>{% endif %}</div>
+  <div class="review-content">
+    <div class="row-between"><div><span class="section-kicker">LAPORAN #{{r.id}}</span><h2>{{r.title}}</h2></div><span class="badge pending">Pending</span></div>
+    <p><strong>{{r.category}}</strong> · {{r.damage_type}}</p><p>{{r.description}}</p>
+    <p class="muted">Lokasi: {{'%.6f'|format(r.latitude)}}, {{'%.6f'|format(r.longitude)}} · {{r.created_at.strftime('%d %b %Y %H:%M')}}</p>
+    <form method="post" action="{{url_for('review_report', report_id=r.id)}}" class="review-form">
+      <textarea name="reason" placeholder="Alasan / catatan operator (wajib untuk disapprove)"></textarea>
+      <div class="review-actions"><button name="decision" value="approved" class="btn approve">✓ Approve</button><button name="decision" value="disapproved" class="btn reject">× Disapprove</button></div>
+    </form>
+  </div>
+</article>
+{% else %}<div class="empty-card">Semua laporan sudah ditinjau. Tidak ada antrean.</div>{% endfor %}
+</div>
+{% endblock %}

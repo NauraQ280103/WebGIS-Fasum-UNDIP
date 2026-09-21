@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% block title %}Masuk · Halo DEEPS{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <section class="auth-brand">
+    <div class="logo-placeholder">UNDIP</div>
+    <span class="eyebrow">UNIVERSITAS DIPONEGORO</span>
+    <h1>Halo DEEPS</h1>
+    <p>Temukan, laporkan, dan pantau kerusakan fasilitas umum kampus melalui satu platform berbasis peta.</p>
+    <div class="auth-note">Akses sivitas akademika menggunakan NIM/email atau SSO.</div>
+  </section>
+  <section class="auth-form">
+    <div class="section-kicker">SIGN IN</div>
+    <h2>Selamat datang kembali</h2>
+    <p class="muted">Masuk untuk melihat peta dan membuat laporan.</p>
+    <form method="post">
+      <label>NIM / Email</label><input name="identity" placeholder="contoh: 240001 atau nama@undip.ac.id" required>
+      <label>Password</label><input name="password" type="password" placeholder="Masukkan password" required>
+      <div class="row-between small"><label class="check"><input type="checkbox" checked> Tetap masuk</label><span>Lupa password?</span></div>
+      <button class="btn primary full">Sign In</button>
+    </form>
+    <div class="divider"><span>atau</span></div>
+    <a class="btn sso full" href="{{ url_for('sso_login') }}">🔐 Masuk dengan SSO UNDIP</a>
+    <p class="center small">Belum punya akun lokal? <a href="{{ url_for('register') }}">Buat akun</a></p>
+  </section>
+</div>
+{% endblock %}

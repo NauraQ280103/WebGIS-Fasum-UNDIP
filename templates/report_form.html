@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}Lapor · Halo DEEPS{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="section-kicker">NEW REPORT</div><h1>Laporkan Kerusakan Fasilitas</h1><p class="muted">Pilih lokasi dari foto ber-GPS atau titikkan langsung pada peta.</p></div><a class="btn ghost" href="{{ url_for('map_page') }}">Batal</a></div>
+<form method="post" enctype="multipart/form-data" class="report-layout">
+  <section class="form-card">
+    <h3>1. Informasi Kerusakan</h3>
+    <label>Judul laporan</label><input name="title" placeholder="Contoh: Lampu jalan mati di depan Fakultas Teknik">
+    <div class="two-col">
+      <div><label>Kategori</label><select name="category" id="category" required><option value="">Pilih kategori</option>{% for c in categories %}<option>{{c}}</option>{% endfor %}</select></div>
+      <div><label>Jenis kerusakan</label><select name="damage_type" id="damage_type" required><option value="">Pilih kategori dulu</option></select></div>
+    </div>
+    <label>Deskripsi</label><textarea name="description" rows="5" placeholder="Jelaskan kondisi, patokan lokasi, atau informasi lain yang membantu operator." required></textarea>
+    <h3>2. Foto & Lokasi</h3>
+    <label>Foto kerusakan</label><input type="file" name="photo" id="photo" accept="image/jpeg,image/png,image/webp">
+    <button type="button" class="btn ghost" id="extractGps">📍 Ambil koordinat dari metadata foto</button>
+    <div class="location-status" id="locationStatus">Belum ada koordinat.</div>
+    <div id="pickMap"></div>
+    <div class="two-col">
+      <div><label>Latitude</label><input name="latitude" id="latitude" readonly required></div>
+      <div><label>Longitude</label><input name="longitude" id="longitude" readonly required></div>
+    </div>
+    <button class="btn primary">Kirim Laporan</button>
+  </section>
+</form>
+{% endblock %}
+{% block scripts %}<script>
+const categoryData = {{ categories|tojson }};
+initReportForm(categoryData);
+</script>{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Daftar · Halo DEEPS{% endblock %}
+{% block content %}
+<div class="auth-simple">
+  <div class="section-kicker">BUAT AKUN</div><h1>Akun Sivitas</h1>
+  <p class="muted">Untuk produksi, registrasi sebaiknya digantikan oleh verifikasi identitas/SSO resmi kampus.</p>
+  <form method="post" class="form-grid">
+    <div><label>Nama lengkap</label><input name="name" required></div>
+    <div><label>NIM / ID</label><input name="nim" required></div>
+    <div><label>Email UNDIP</label><input type="email" name="email" required></div>
+    <div><label>Password</label><input type="password" name="password" required></div>
+    <button class="btn primary">Daftar</button><a class="btn ghost" href="{{ url_for('login') }}">Kembali</a>
+  </form>
+</div>
+{% endblock %}

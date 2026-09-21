@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Detail Laporan · Halo DEEPS{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="section-kicker">REPORT #{{report.id}}</div><h1>{{report.title}}</h1><p class="muted">{{report.category}} · {{report.damage_type}}</p></div><a class="btn ghost" href="{{url_for('history')}}">← Kembali</a></div>
+<div class="detail-grid">
+  <section class="form-card">
+    {% if report.photo %}<img class="detail-photo" src="{{url_for('uploaded_file', filename=report.photo)}}" alt="Foto laporan">{% endif %}
+    <h3>Deskripsi</h3><p>{{report.description}}</p>
+    <div class="info-grid"><div><small>Status</small><strong class="badge {{report.status}}">{{report.status|capitalize}}</strong></div><div><small>Dibuat</small><strong>{{report.created_at.strftime('%d %B %Y')}}</strong></div><div><small>Koordinat</small><strong>{{'%.6f'|format(report.latitude)}}, {{'%.6f'|format(report.longitude)}}</strong></div></div>
+    {% if report.operator_reason %}<div class="reason-box"><small>Catatan operator</small><p>{{report.operator_reason}}</p></div>{% endif %}
+  </section>
+  <section class="form-card"><div id="detailMap"></div></section>
+</div>
+{% endblock %}
+{% block scripts %}<script>initDetailMap({{report.latitude}}, {{report.longitude}}, {{report.title|tojson}});</script>{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block title %}Riwayat · Halo DEEPS{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="section-kicker">REPORT HISTORY</div><h1>Riwayat Laporan</h1><p class="muted">Cari, filter, dan buka detail laporan.</p></div><a class="btn primary" href="{{ url_for('new_report') }}">＋ Laporan Baru</a></div>
+<form class="filter-bar">
+  <input name="q" value="{{q}}" placeholder="🔎 Cari judul, jenis kerusakan, deskripsi…">
+  <select name="category"><option value="">Semua kategori</option>{% for c in categories %}<option value="{{c}}" {% if selected_category==c %}selected{% endif %}>{{c}}</option>{% endfor %}</select>
+  <select name="status"><option value="">Semua status</option>{% for s in ['pending','approved','disapproved'] %}<option value="{{s}}" {% if selected_status==s %}selected{% endif %}>{{s|capitalize}}</option>{% endfor %}</select>
+  <button class="btn primary">Filter</button><a class="btn ghost" href="{{url_for('history')}}">Reset</a>
+</form>
+<div class="report-list">
+{% for r in reports %}
+<a href="{{ url_for('report_detail', report_id=r.id) }}" class="report-row">
+  <div class="report-thumb">{% if r.photo %}<img src="{{ url_for('uploaded_file', filename=r.photo) }}" onerror="this.style.display='none'">{% else %}📷{% endif %}</div>
+  <div class="report-main"><div class="row-between"><h3>{{r.title}}</h3><span class="badge {{r.status}}">{{r.status|capitalize}}</span></div><p>{{r.category}} · {{r.damage_type}}</p><small>{{r.created_at.strftime('%d %B %Y, %H:%M')}} · {{r.description[:120]}}</small></div>
+  <div class="chevron">›</div>
+</a>
+{% else %}<div class="empty-card">Tidak ada laporan yang sesuai filter.</div>{% endfor %}
+</div>
+{% endblock %}

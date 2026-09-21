@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% block title %}Peta · Halo DEEPS{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><div class="section-kicker">CAMPUS FACILITY MAP</div><h1>Peta Fasilitas & Pelaporan</h1><p class="muted">Marker publik hanya menampilkan laporan yang sudah disetujui operator.</p></div>
+  <a class="btn primary" href="{{ url_for('new_report') }}">＋ Buat Laporan</a>
+</div>
+<div class="map-layout">
+  <section class="map-panel">
+    <div class="map-toolbar">
+      <input id="mapSearch" placeholder="Cari laporan atau lokasi…">
+      <select id="categoryFilter"><option value="">Semua kategori</option>{% for c in categories %}<option>{{ c }}</option>{% endfor %}</select>
+    </div>
+    <div id="map"></div>
+  </section>
+  <aside class="latest-panel">
+    <div class="panel-title"><div><span class="section-kicker">AKTIVITAS</span><h3>Laporan Terbaru</h3></div><a href="{{ url_for('history') }}">Lihat semua</a></div>
+    {% for r in latest %}
+    <a class="latest-item" href="{{ url_for('history') }}?q={{ r.title|urlencode }}">
+      <div class="status-dot {{ r.status }}"></div>
+      <div><strong>{{ r.title }}</strong><small>{{ r.category }} · {{ r.created_at.strftime('%d %b %Y') }}</small><span class="badge {{ r.status }}">{{ r.status|capitalize }}</span></div>
+    </a>
+    {% else %}<div class="empty">Belum ada laporan.</div>{% endfor %}
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const approvedReports = {{ approved|map(attribute='id')|list|tojson }};
+const reportData = [
+{% for r in approved %}
+{id:{{r.id}}, title:{{r.title|tojson}}, category:{{r.category|tojson}}, damage:{{r.damage_type|tojson}}, description:{{r.description|tojson}}, lat:{{r.latitude}}, lon:{{r.longitude}}, photo:{{(url_for('static', filename='') ~ '')|tojson}} + {{(r.photo or '')|tojson}}, date:{{r.created_at.strftime('%d %b %Y')|tojson}}}{% if not loop.last %},{% endif %}
+{% endfor %}
+];
+initMap(reportData);
+</script>
+{% endblock %}
