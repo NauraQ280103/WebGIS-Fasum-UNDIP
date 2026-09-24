@@ -19,6 +19,8 @@ Prototype WebGIS berbasis Python/Flask yang mengikuti rancangan UI pada PDF yang
 - Kotak alasan/catatan operator; alasan wajib ketika disapprove.
 - Password disimpan sebagai hash, bukan plaintext.
 - Total fasilitas/tiling dihapus dari desain dashboard peta.
+- menambahkan fitur marker agar user dapat mengetahui posisi 
+
 
 ## Menjalankan
 1. Install Python 3.11+.
