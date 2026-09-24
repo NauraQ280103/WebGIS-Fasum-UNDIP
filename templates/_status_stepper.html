@@ -1,0 +1,124 @@
+{#
+  Komponen: Stepper Alur Persetujuan & Perbaikan Laporan
+  Pakai di report_detail.html:  {% include "_status_stepper.html" %}
+
+  Status yang dipakai (field report.status):
+    pending     -> Diajukan, menunggu ditinjau operator
+    processing  -> Disetujui operator, sedang diperbaiki
+    disapproved -> Ditolak operator (alur berhenti)
+    completed   -> Selesai diperbaiki, ada foto bukti (report.completion_photo)
+#}
+
+<style>
+  .stepper-wrap { background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:24px 28px; margin:20px 0; }
+  .stepper-banner { display:flex; gap:12px; padding:16px 18px; border-radius:10px; margin-bottom:24px; font-size:14px; }
+  .stepper-banner.pending    { background:#eef2ff; color:#3730a3; }
+  .stepper-banner.processing { background:#fff7ed; color:#9a3412; }
+  .stepper-banner.completed  { background:#ecfdf5; color:#065f46; }
+  .stepper-banner.rejected   { background:#fef2f2; color:#991b1b; }
+  .stepper-banner b { display:block; margin-bottom:2px; font-size:14.5px; }
+  .stepper-label { font-size:12px; font-weight:700; letter-spacing:.04em; color:#9ca3af; text-transform:uppercase; margin-bottom:18px; }
+  .stepper-track { display:flex; align-items:center; flex-wrap:wrap; gap:0; }
+  .step { display:flex; flex-direction:column; align-items:center; min-width:120px; }
+  .step-box { width:100%; padding:14px 8px; border-radius:10px; text-align:center; font-size:13px; font-weight:700; color:#fff; background:#d1d5db; }
+  .step-box.done      { background:#10b981; }
+  .step-box.current   { background:#6366f1; }
+  .step-box.rejected  { background:#ef4444; }
+  .step-time { font-size:11.5px; color:#9ca3af; margin-top:8px; text-align:center; }
+  .step-connector { flex:0 0 28px; height:2px; background:#d1d5db; margin:0 4px 34px; }
+  .step-connector.done { background:#10b981; }
+  .stepper-footer { text-align:center; margin-top:22px; font-size:13.5px; font-weight:600; }
+  .stepper-footer.done     { color:#10b981; }
+  .stepper-footer.rejected { color:#ef4444; }
+  .stepper-footer.pending  { color:#9ca3af; }
+  .completion-photo { margin-top:24px; text-align:center; }
+  .completion-photo img { max-width:100%; border-radius:12px; border:1px solid #e5e7eb; }
+  .completion-photo small { display:block; margin-bottom:10px; color:#9ca3af; font-weight:600; letter-spacing:.03em; text-transform:uppercase; font-size:11.5px; }
+  @media (max-width:560px) {
+    .stepper-track { flex-direction:column; align-items:stretch; }
+    .step { min-width:100%; }
+    .step-connector { width:2px; height:24px; margin:4px auto; }
+  }
+</style>
+
+{% set is_pending     = (report.status == 'pending') %}
+{% set is_processing  = (report.status == 'processing') %}
+{% set is_disapprove  = (report.status == 'disapproved') %}
+{% set is_completed   = (report.status == 'completed') %}
+{% set past_review    = (report.status in ['processing', 'completed']) %}
+
+<div class="stepper-wrap">
+
+  {% if is_pending %}
+    <div class="stepper-banner pending">
+      <div><b>Menunggu verifikasi operator</b>Laporan Anda sedang ditinjau.</div>
+    </div>
+  {% elif is_processing %}
+    <div class="stepper-banner processing">
+      <div><b>Sedang diperbaiki</b>{{ report.operator_reason or "Laporan telah diverifikasi dan sedang dalam proses perbaikan." }}</div>
+    </div>
+  {% elif is_completed %}
+    <div class="stepper-banner completed">
+      <div><b>Perbaikan selesai</b>Fasilitas telah diperbaiki. Lihat foto bukti di bawah.</div>
+    </div>
+  {% elif is_disapprove %}
+    <div class="stepper-banner rejected">
+      <div><b>Laporan ditolak</b>{{ report.operator_reason or "Laporan tidak memenuhi kriteria verifikasi." }}</div>
+    </div>
+  {% endif %}
+
+  <div class="stepper-label">Alur Persetujuan &amp; Perbaikan</div>
+
+  <div class="stepper-track">
+
+    <div class="step">
+      <div class="step-box done">Diajukan</div>
+      <div class="step-time">{{ report.created_at.strftime('%d %b %Y, %H:%M') if report.created_at else '-' }}</div>
+    </div>
+
+    <div class="step-connector {{ 'done' if not is_pending else '' }}"></div>
+
+    <div class="step">
+      <div class="step-box {{ 'rejected' if is_disapprove else ('done' if past_review else 'current') }}">
+        {{ 'Ditolak' if is_disapprove else 'Ditinjau Operator' }}
+      </div>
+      <div class="step-time">
+        {{ report.reviewed_at.strftime('%d %b %Y, %H:%M') if report.reviewed_at else 'Sedang berjalan' }}
+      </div>
+    </div>
+
+    {% if not is_disapprove %}
+    <div class="step-connector {{ 'done' if is_completed else '' }}"></div>
+
+    <div class="step">
+      <div class="step-box {{ 'done' if is_completed else ('current' if is_processing else '') }}">Diproses</div>
+      <div class="step-time">
+        {% if is_processing %}Sedang berjalan{% elif is_completed %}Selesai{% else %}-{% endif %}
+      </div>
+    </div>
+
+    <div class="step-connector {{ 'done' if is_completed else '' }}"></div>
+
+    <div class="step">
+      <div class="step-box {{ 'done' if is_completed else '' }}">Selesai</div>
+      <div class="step-time">{{ report.completed_at.strftime('%d %b %Y, %H:%M') if report.completed_at else '-' }}</div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {% if is_completed %}
+    <div class="stepper-footer done">✓ Perbaikan selesai</div>
+    {% if report.completion_photo %}
+    <div class="completion-photo">
+      <small>Foto Fasilitas Setelah Diperbaiki</small>
+      <img src="{{ url_for('uploaded_file', filename=report.completion_photo) }}" alt="Foto perbaikan selesai">
+    </div>
+    {% endif %}
+  {% elif is_disapprove %}
+    <div class="stepper-footer rejected">✕ Laporan ditolak</div>
+  {% else %}
+    <div class="stepper-footer pending">⏳ Menunggu tindak lanjut</div>
+  {% endif %}
+
+</div>

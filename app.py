@@ -14,7 +14,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-change-this")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///webgis.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "uploads")
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
@@ -307,46 +307,18 @@ def api_categories():
 def seed():
     with app.app_context():
         db.create_all()
-
-        operator_email = os.getenv(
-            "OPERATOR_EMAIL",
-            "operator@undip.ac.id"
-        ).lower()
-
-        operator_password = os.getenv(
-            "OPERATOR_PASSWORD",
-            "operator123"
-        )
-
-        # Cek operator berdasarkan identity ATAU email
-        op = User.query.filter(
-            (User.identity == "OPERATOR") |
-            (User.email == operator_email)
-        ).first()
-
+        operator_email = os.getenv("OPERATOR_EMAIL", "operator@undip.ac.id").lower()
+        operator_password = os.getenv("OPERATOR_PASSWORD", "operator123")
+        op = User.query.filter_by(email=operator_email).first()
         if not op:
-            op = User(
-                identity="OPERATOR",
-                email=operator_email,
-                name="Operator DEEPS",
-                role="operator"
-            )
+            op = User(identity="OPERATOR", email=operator_email, name="Operator DEEPS", role="operator")
             op.set_password(operator_password)
             db.session.add(op)
-
-        # User demo
         if not User.query.filter_by(identity="240001").first():
-            u = User(
-                identity="240001",
-                email="240001@students.undip.ac.id",
-                name="Mahasiswa Demo",
-                role="user"
-            )
+            u = User(identity="240001", email="240001@students.undip.ac.id", name="Mahasiswa Demo", role="user")
             u.set_password("mahasiswa123")
             db.session.add(u)
-
         db.session.commit()
-
 
 if __name__ == "__main__":
     seed()

@@ -7,6 +7,7 @@
     <h3>Deskripsi</h3><p>{{report.description}}</p>
     <div class="info-grid"><div><small>Status</small><strong class="badge {{report.status}}">{{report.status|capitalize}}</strong></div><div><small>Dibuat</small><strong>{{report.created_at.strftime('%d %B %Y')}}</strong></div><div><small>Koordinat</small><strong>{{'%.6f'|format(report.latitude)}}, {{'%.6f'|format(report.longitude)}}</strong></div></div>
     {% if report.operator_reason %}<div class="reason-box"><small>Catatan operator</small><p>{{report.operator_reason}}</p></div>{% endif %}
+    {% include "_status_stepper.html" %}
   </section>
   <section class="form-card"><div id="detailMap"></div></section>
 </div>
