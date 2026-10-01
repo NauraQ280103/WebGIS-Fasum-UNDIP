@@ -49,3 +49,30 @@ function initDetailMap(lat,lon,title){
   L.marker([lat,lon]).addTo(map).bindPopup(escapeHtml(title)).openPopup();
 }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+
+document.getElementById("getLocationBtn").addEventListener("click", function () {
+    if (!navigator.geolocation) {
+        alert("Browser tidak mendukung fitur lokasi.");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            document.getElementById("latitude").value = latitude;
+            document.getElementById("longitude").value = longitude;
+
+            alert(
+                "Lokasi berhasil ditemukan!\n" +
+                "Latitude: " + latitude + "\n" +
+                "Longitude: " + longitude
+            );
+        },
+        function (error) {
+            alert("Lokasi tidak dapat diperoleh: " + error.message);
+        }
+    );
+});

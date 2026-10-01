@@ -27,3 +27,10 @@
 const categoryData = {{ categories|tojson }};
 initReportForm(categoryData);
 </script>{% endblock %}
+
+<button type="button" id="getLocationBtn">
+    📍 Gunakan Lokasi Saya
+</button>
+
+<input type="hidden" name="latitude" id="latitude">
+<input type="hidden" name="longitude" id="longitude">
