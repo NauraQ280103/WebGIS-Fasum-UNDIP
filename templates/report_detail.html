@@ -13,3 +13,30 @@
 </div>
 {% endblock %}
 {% block scripts %}<script>initDetailMap({{report.latitude}}, {{report.longitude}}, {{report.title|tojson}});</script>{% endblock %}
+
+
+{% if report.completion_photo %}
+<div class="completion-photo-section">
+
+    <h3>Foto Setelah Perbaikan</h3>
+
+    <img
+        src="{{ url_for('uploaded_file', filename=report.completion_photo) }}"
+        alt="Foto hasil perbaikan"
+        style="
+            max-width: 100%;
+            width: 500px;
+            border-radius: 12px;
+            display: block;
+            margin-top: 10px;
+        "
+    >
+
+    <p>
+        <strong>Keterangan Perbaikan:</strong><br>
+        {{ report.operator_reason or "Perbaikan telah selesai." }}
+    </p>
+
+</div>
+{% endif %}
+```

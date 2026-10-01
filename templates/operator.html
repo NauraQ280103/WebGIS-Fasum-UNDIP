@@ -1,26 +1,607 @@
-{% extends "base.html" %}{% block title %}Operator · Halo DEEPS{% endblock %}
+```html
+{% extends "base.html" %}
+
+{% block title %}Operator · Halo DEEPS{% endblock %}
+
 {% block content %}
-<div class="page-head"><div><div class="section-kicker">OPERATOR CONSOLE</div><h1>Verifikasi Laporan</h1><p class="muted">Tinjau laporan sebelum ditampilkan pada peta publik.</p></div></div>
-<div class="stat-grid">
-  <div class="stat-card"><span>Menunggu</span><strong>{{stats.pending}}</strong><small>Perlu ditinjau</small></div>
-  <div class="stat-card"><span>Disetujui</span><strong>{{stats.approved}}</strong><small>Tampil di peta</small></div>
-  <div class="stat-card"><span>Ditolak</span><strong>{{stats.disapproved}}</strong><small>Perlu perbaikan</small></div>
-  <div class="stat-card"><span>Total</span><strong>{{stats.total}}</strong><small>Semua laporan</small></div>
-</div>
-<div class="operator-list">
-{% for r in pending %}
-<article class="review-card">
-  <div class="review-media">{% if r.photo %}<img src="{{url_for('uploaded_file', filename=r.photo)}}" alt="Foto">{% else %}<div class="photo-empty">No photo</div>{% endif %}</div>
-  <div class="review-content">
-    <div class="row-between"><div><span class="section-kicker">LAPORAN #{{r.id}}</span><h2>{{r.title}}</h2></div><span class="badge pending">Pending</span></div>
-    <p><strong>{{r.category}}</strong> · {{r.damage_type}}</p><p>{{r.description}}</p>
-    <p class="muted">Lokasi: {{'%.6f'|format(r.latitude)}}, {{'%.6f'|format(r.longitude)}} · {{r.created_at.strftime('%d %b %Y %H:%M')}}</p>
-    <form method="post" action="{{url_for('review_report', report_id=r.id)}}" class="review-form">
-      <textarea name="reason" placeholder="Alasan / catatan operator (wajib untuk disapprove)"></textarea>
-      <div class="review-actions"><button name="decision" value="approved" class="btn approve">✓ Approve</button><button name="decision" value="disapproved" class="btn reject">× Disapprove</button></div>
-    </form>
+
+<div class="page-head">
+  <div>
+    <div class="section-kicker">OPERATOR CONSOLE</div>
+    <h1>Verifikasi & Penanganan Laporan</h1>
+    <p class="muted">
+      Tinjau laporan, proses perbaikan, dan dokumentasikan hasil perbaikan fasilitas.
+    </p>
   </div>
-</article>
-{% else %}<div class="empty-card">Semua laporan sudah ditinjau. Tidak ada antrean.</div>{% endfor %}
 </div>
+
+
+<!-- ===================================================== -->
+<!-- STATISTIK -->
+<!-- ===================================================== -->
+
+<div class="stat-grid">
+
+  <div class="stat-card">
+    <span>Menunggu</span>
+    <strong>{{ stats.pending }}</strong>
+    <small>Perlu ditinjau</small>
+  </div>
+
+  <div class="stat-card">
+    <span>Sedang Diproses</span>
+    <strong>{{ stats.processing }}</strong>
+    <small>Dalam penanganan</small>
+  </div>
+
+  <div class="stat-card">
+    <span>Selesai</span>
+    <strong>{{ stats.completed }}</strong>
+    <small>Perbaikan selesai</small>
+  </div>
+
+  <div class="stat-card">
+    <span>Ditolak</span>
+    <strong>{{ stats.disapproved }}</strong>
+    <small>Laporan ditolak</small>
+  </div>
+
+  <div class="stat-card">
+    <span>Total</span>
+    <strong>{{ stats.total }}</strong>
+    <small>Semua laporan</small>
+  </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- LAPORAN MENUNGGU VERIFIKASI -->
+<!-- ===================================================== -->
+
+<div class="page-head" style="margin-top: 32px;">
+  <div>
+    <div class="section-kicker">TAHAP 1</div>
+    <h2>Menunggu Verifikasi</h2>
+    <p class="muted">
+      Periksa laporan sebelum masuk ke tahap perbaikan.
+    </p>
+  </div>
+</div>
+
+
+<div class="operator-list">
+
+{% for r in pending %}
+
+<article class="review-card">
+
+  <div class="review-media">
+
+    {% if r.photo %}
+
+      <img
+        src="{{ url_for('uploaded_file', filename=r.photo) }}"
+        alt="Foto laporan #{{ r.id }}"
+      >
+
+    {% else %}
+
+      <div class="photo-empty">
+        Tidak ada foto
+      </div>
+
+    {% endif %}
+
+  </div>
+
+
+  <div class="review-content">
+
+    <div class="row-between">
+
+      <div>
+        <span class="section-kicker">
+          LAPORAN #{{ r.id }}
+        </span>
+
+        <h2>{{ r.title }}</h2>
+      </div>
+
+      <span class="badge pending">
+        Pending
+      </span>
+
+    </div>
+
+
+    <p>
+      <strong>{{ r.category }}</strong>
+      ·
+      {{ r.damage_type }}
+    </p>
+
+    <p>
+      {{ r.description }}
+    </p>
+
+    <p class="muted">
+      Lokasi:
+      {{ '%.6f'|format(r.latitude) }},
+      {{ '%.6f'|format(r.longitude) }}
+
+      ·
+
+      {{ r.created_at.strftime('%d %b %Y %H:%M') }}
+    </p>
+
+
+    <!-- FORM VERIFIKASI -->
+
+    <form
+      method="POST"
+      action="{{ url_for('review_report', report_id=r.id) }}"
+      class="review-form"
+    >
+
+      <textarea
+        name="reason"
+        placeholder="Catatan operator. Wajib diisi jika laporan ditolak."
+      ></textarea>
+
+
+      <div class="review-actions">
+
+        <button
+          type="submit"
+          name="decision"
+          value="approved"
+          class="btn approve"
+        >
+          ✓ Setujui & Proses
+        </button>
+
+
+        <button
+          type="submit"
+          name="decision"
+          value="disapproved"
+          class="btn reject"
+        >
+          × Tolak Laporan
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</article>
+
+{% else %}
+
+<div class="empty-card">
+  Semua laporan sudah ditinjau.
+  Tidak ada laporan yang menunggu verifikasi.
+</div>
+
+{% endfor %}
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- LAPORAN SEDANG DIPROSES -->
+<!-- ===================================================== -->
+
+<div class="page-head" style="margin-top: 48px;">
+
+  <div>
+
+    <div class="section-kicker">
+      TAHAP 2
+    </div>
+
+    <h2>
+      Sedang Diproses
+    </h2>
+
+    <p class="muted">
+      Upload foto setelah fasilitas selesai diperbaiki,
+      kemudian tandai laporan sebagai selesai.
+    </p>
+
+  </div>
+
+</div>
+
+
+<div class="operator-list">
+
+{% for r in processing %}
+
+<article class="review-card">
+
+  <!-- FOTO AWAL -->
+
+  <div class="review-media">
+
+    {% if r.photo %}
+
+      <img
+        src="{{ url_for('uploaded_file', filename=r.photo) }}"
+        alt="Foto kerusakan laporan #{{ r.id }}"
+      >
+
+    {% else %}
+
+      <div class="photo-empty">
+        Tidak ada foto awal
+      </div>
+
+    {% endif %}
+
+  </div>
+
+
+  <div class="review-content">
+
+    <div class="row-between">
+
+      <div>
+
+        <span class="section-kicker">
+          LAPORAN #{{ r.id }}
+        </span>
+
+        <h2>{{ r.title }}</h2>
+
+      </div>
+
+      <span class="badge processing">
+        Sedang Diproses
+      </span>
+
+    </div>
+
+
+    <p>
+      <strong>{{ r.category }}</strong>
+      ·
+      {{ r.damage_type }}
+    </p>
+
+
+    <p>
+      {{ r.description }}
+    </p>
+
+
+    {% if r.operator_reason %}
+
+    <p class="muted">
+      <strong>Catatan operator:</strong>
+      {{ r.operator_reason }}
+    </p>
+
+    {% endif %}
+
+
+    <!-- FORM HASIL PERBAIKAN -->
+
+    <form
+      method="POST"
+      action="{{ url_for('complete_report', report_id=r.id) }}"
+      enctype="multipart/form-data"
+      class="review-form"
+    >
+
+      <div class="form-group">
+
+        <label for="completion_photo_{{ r.id }}">
+          <strong>Foto Hasil Perbaikan</strong>
+        </label>
+
+        <input
+          type="file"
+          id="completion_photo_{{ r.id }}"
+          name="completion_photo"
+          accept=".jpg,.jpeg,.png,.webp"
+          required
+        >
+
+        <small class="muted">
+          Upload foto fasilitas setelah diperbaiki.
+          Format JPG, JPEG, PNG, atau WEBP.
+        </small>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="reason_{{ r.id }}">
+          <strong>Keterangan Perbaikan</strong>
+        </label>
+
+        <textarea
+          id="reason_{{ r.id }}"
+          name="reason"
+          rows="4"
+          placeholder="Tuliskan tindakan atau hasil perbaikan..."
+        ></textarea>
+
+      </div>
+
+
+      <div class="review-actions">
+
+        <button
+          type="submit"
+          class="btn approve"
+        >
+          ✓ Upload & Tandai Selesai
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</article>
+
+{% else %}
+
+<div class="empty-card">
+
+  Tidak ada laporan yang sedang diproses.
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- LAPORAN SELESAI -->
+<!-- ===================================================== -->
+
+<div class="page-head" style="margin-top: 48px;">
+
+  <div>
+
+    <div class="section-kicker">
+      TAHAP 3
+    </div>
+
+    <h2>
+      Laporan Selesai
+    </h2>
+
+    <p class="muted">
+      Laporan yang telah selesai diperbaiki dan memiliki dokumentasi hasil.
+    </p>
+
+  </div>
+
+</div>
+
+
+<div class="operator-list">
+
+{% for r in completed %}
+
+<article class="review-card">
+
+  <!-- FOTO HASIL PERBAIKAN -->
+
+  <div class="review-media">
+
+    {% if r.completion_photo %}
+
+      <img
+        src="{{ url_for('uploaded_file', filename=r.completion_photo) }}"
+        alt="Foto hasil perbaikan laporan #{{ r.id }}"
+      >
+
+    {% elif r.photo %}
+
+      <img
+        src="{{ url_for('uploaded_file', filename=r.photo) }}"
+        alt="Foto laporan #{{ r.id }}"
+      >
+
+    {% else %}
+
+      <div class="photo-empty">
+        Tidak ada foto
+      </div>
+
+    {% endif %}
+
+  </div>
+
+
+  <div class="review-content">
+
+    <div class="row-between">
+
+      <div>
+
+        <span class="section-kicker">
+          LAPORAN #{{ r.id }}
+        </span>
+
+        <h2>{{ r.title }}</h2>
+
+      </div>
+
+      <span class="badge completed">
+        Selesai
+      </span>
+
+    </div>
+
+
+    <p>
+      <strong>{{ r.category }}</strong>
+      ·
+      {{ r.damage_type }}
+    </p>
+
+
+    {% if r.operator_reason %}
+
+    <p>
+      <strong>Keterangan:</strong>
+      {{ r.operator_reason }}
+    </p>
+
+    {% endif %}
+
+
+    {% if r.completion_photo %}
+
+    <p class="muted">
+      ✓ Foto hasil perbaikan telah diunggah.
+    </p>
+
+    {% endif %}
+
+
+    <a
+      href="{{ url_for('report_detail', report_id=r.id) }}"
+      class="btn"
+    >
+      Lihat Detail
+    </a>
+
+  </div>
+
+</article>
+
+{% else %}
+
+<div class="empty-card">
+
+  Belum ada laporan yang selesai.
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- LAPORAN DITOLAK -->
+<!-- ===================================================== -->
+
+<div class="page-head" style="margin-top: 48px;">
+
+  <div>
+
+    <div class="section-kicker">
+      LAPORAN DITOLAK
+    </div>
+
+    <h2>
+      Laporan Ditolak
+    </h2>
+
+    <p class="muted">
+      Laporan yang tidak disetujui oleh operator.
+    </p>
+
+  </div>
+
+</div>
+
+
+<div class="operator-list">
+
+{% for r in disapproved %}
+
+<article class="review-card">
+
+  <div class="review-media">
+
+    {% if r.photo %}
+
+      <img
+        src="{{ url_for('uploaded_file', filename=r.photo) }}"
+        alt="Foto laporan #{{ r.id }}"
+      >
+
+    {% else %}
+
+      <div class="photo-empty">
+        Tidak ada foto
+      </div>
+
+    {% endif %}
+
+  </div>
+
+
+  <div class="review-content">
+
+    <div class="row-between">
+
+      <div>
+
+        <span class="section-kicker">
+          LAPORAN #{{ r.id }}
+        </span>
+
+        <h2>{{ r.title }}</h2>
+
+      </div>
+
+      <span class="badge reject">
+        Ditolak
+      </span>
+
+    </div>
+
+
+    <p>
+      <strong>{{ r.category }}</strong>
+      ·
+      {{ r.damage_type }}
+    </p>
+
+
+    {% if r.operator_reason %}
+
+    <p>
+      <strong>Alasan penolakan:</strong><br>
+      {{ r.operator_reason }}
+    </p>
+
+    {% endif %}
+
+  </div>
+
+</article>
+
+{% else %}
+
+<div class="empty-card">
+
+  Tidak ada laporan yang ditolak.
+
+</div>
+
+{% endfor %}
+
+</div>
+
 {% endblock %}
+```
